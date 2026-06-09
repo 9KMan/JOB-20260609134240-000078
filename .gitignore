@@ -1,0 +1,59 @@
+# Build-worker internals — NEVER push to GitHub
+SPEC.txt
+TASK.txt
+pid
+role
+worker.log
+PROPOSAL.md
+COVER_LETTER.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.venv/
+venv/
+env/
+
+# Node / TS
+node_modules/
+.next/
+dist/
+*.tsbuildinfo
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+secrets.yml
+*.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Database / Supabase local
+*.db
+*.sqlite
+*.sqlite3
+supabase/.branches
+supabase/.temp
+supabase/.env
+
+# Logs
+*.log
+logs/

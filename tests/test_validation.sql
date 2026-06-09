@@ -1,0 +1,64 @@
+-- test_validation.sql
+-- Validates the TypeScript validator (in supabase/functions/onboarding-save/validation.ts).
+-- This SQL file documents the field-level contract that the function enforces.
+-- For the actual TypeScript tests, see supabase/functions/onboarding-save/tests/.
+
+-- 1. Required fields
+--    organisation.slug            (^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$)
+--    organisation.name            (length 1..200)
+--    organisation.country_code    (^[A-Z]{2}$)
+--    facilities[].temp_id         (string)
+--    facilities[].code            (string 1..64)
+--    facilities[].name            (string 1..200)
+--    products[].temp_id           (string)
+--    products[].sku               (string 1..64)
+--    products[].name              (string 1..200)
+--    ingredients[].temp_id        (string)
+--    ingredients[].sku            (string 1..64)
+--    ingredients[].name           (string 1..200)
+--    recipes[].temp_id            (string)
+--    recipes[].product_temp_id    (string, must reference a product temp_id)
+--    recipes[].version            (int >= 1)
+--    recipes[].name               (string 1..200)
+--    recipes[].yield_quantity     (number >= 0)
+--    recipe_ingredients[].recipe_temp_id     (string, must reference a recipe temp_id)
+--    recipe_ingredients[].ingredient_temp_id (string, must reference an ingredient temp_id)
+--    recipe_ingredients[].quantity            (number >= 0)
+--    recipe_ingredients[].unit                (one of kg, g, lb, oz, l, ml, ea)
+--    cost_pools[].code            (string 1..64)
+--    cost_pools[].name            (string 1..200)
+--    cost_pools[].category        (one of material, labour, overhead, yield)
+--    labour_standards[].role      (string 1..100)
+--    labour_standards[].rate_per_hour (number >= 0)
+--    pricing_configurations[].channel    (string 1..64)
+--    pricing_configurations[].base_price (number >= 0)
+--    retail_commitments[].customer_name  (string 1..200)
+--    retail_commitments[].committed_price (number >= 0)
+--
+-- 2. Uniqueness within the payload
+--    temp_id is unique per section (facilities, products, ingredients, recipes,
+--    cost_pools, labour_standards, pricing_configurations, retail_commitments).
+--
+-- 3. Cross-references (validated before any DB call)
+--    recipes[].product_temp_id        must exist in products[].temp_id
+--    recipe_ingredients[].recipe_temp_id     must exist in recipes[].temp_id
+--    recipe_ingredients[].ingredient_temp_id must exist in ingredients[].temp_id
+--    pricing_configurations[].product_temp_id must exist in products[].temp_id
+--    retail_commitments[].product_temp_id     must exist in products[].temp_id
+--    labour_standards[].facility_temp_id (if present) must exist in facilities[].temp_id
+--
+-- 4. Optional fields with constraints
+--    products[].unit          (one of: ea, kg, g, lb, oz, l, ml, m, cm, pack, case)
+--    ingredients[].default_unit (one of: kg, g, lb, oz, l, ml, ea)
+--    ingredients[].allergens  (string[])
+--    pricing_configurations[].rounding_rule (one of: none, cent, nickel, dime, dollar)
+--    pricing_configurations[].margin_pct    (number 0..1000)
+--    any currency_code field   (^[A-Z]{3}$)
+--
+-- The TypeScript validator returns 422 with an `issues` array on failure.
+-- A successful validation is followed by an atomic SQL insert in
+-- public.onboarding_save_atomic, which itself enforces all database-level
+-- constraints and re-validates cross-references within the transaction.
+
+-- This file is documentation; the validator runs in Deno (Edge Function).
+-- For unit tests of the validator, see supabase/functions/onboarding-save/tests/validation_test.ts.

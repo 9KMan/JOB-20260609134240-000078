@@ -1,0 +1,28 @@
+# Local Supabase development stack.
+# Use:  docker compose up -d
+# Then: supabase db reset   (applies supabase/migrations/*)
+#
+# This is a minimal stack; for a full Supabase local environment with
+# Studio, Auth, Realtime, Storage and Edge Functions, install the
+# Supabase CLI and run `supabase start` instead.
+
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "54322:5432"
+    volumes:
+      - supabase_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  supabase_db:
